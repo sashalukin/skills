@@ -56,14 +56,6 @@ Avoid novelty cursors for standard app controls. Users rely on standard cursor c
 Apply `pointerHoverIcon` to the same interactive region the user can click, drag, resize, or select.
 
 ```kotlin
-import androidx.compose.foundation.clickable
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.semantics.Role
-
 @Composable
 fun LinkText(
     text: String,
@@ -101,12 +93,6 @@ Implementation notes:
 Use state to choose the cursor when the active tool, mode, enabled state, hover target, or drag state changes. Keep the icon calculation cheap and stable.
 
 ```kotlin
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-
 enum class CanvasTool {
     Select,
     Draw,
@@ -135,16 +121,6 @@ fun Modifier.canvasToolCursor(
 When hover state itself is needed for non-cursor UI, prefer existing interaction state:
 
 ```kotlin
-import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-
 @Composable
 fun Modifier.hoverAwareCursor(enabled: Boolean): Modifier {
     val interactionSource = remember { MutableInteractionSource() }
@@ -172,12 +148,6 @@ Choose parent and child behavior deliberately:
 Example parent-owned drawing cursor:
 
 ```kotlin
-import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-
 @Composable
 fun DrawingSurface(
     drawingMode: Boolean,
@@ -199,13 +169,6 @@ fun DrawingSurface(
 When the desired cursor exists in the Android system but not in Compose built-ins, create the platform cursor using `android.view.PointerIcon` and wrap it in a Compose `PointerIcon`.
 
 ```kotlin
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.platform.LocalContext
-
 @Composable
 fun Modifier.horizontalResizeCursor(): Modifier {
     val context = LocalContext.current
