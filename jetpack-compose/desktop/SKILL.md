@@ -4,7 +4,7 @@ description: Use this skill when you need to add desktop-specific features to an
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-12'
+  last-updated: '2026-08-19'
   keywords:
   - android
   - compose
