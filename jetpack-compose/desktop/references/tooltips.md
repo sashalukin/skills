@@ -1,7 +1,7 @@
-# Tooltips in Jetpack Compose Desktop
+# Tooltips in Android Compose Large Screens
 
 ## Description
-Use this document when you need to add, redesign, audit, or verify tooltips in a Jetpack Compose Desktop or Compose Multiplatform desktop application.
+Use this document when you need to add, redesign, audit, or verify tooltips in a Jetpack Compose application targeting Android large screens, tablets, or Android desktop environments.
 
 Expected output:
 
@@ -12,25 +12,24 @@ Expected output:
 
 ## Prerequisites
 
-- Jetpack Compose Desktop or Compose Multiplatform desktop target enabled.
-- Access to the module that contains desktop UI source sets, usually `commonMain`, `desktopMain`, or `jvmMain`.
+- Jetpack Compose dependencies setup.
+- Access to the relevant Android screen or component where tooltips should apply.
 - Material 3 Compose dependency when using `androidx.compose.material3.TooltipBox`, `PlainTooltip`, or `RichTooltip`.
-- Compose Foundation dependency when using JetBrains desktop-only `androidx.compose.foundation.TooltipArea`.
+
 - Opt in to experimental APIs at the narrowest practical scope:
   - `@OptIn(ExperimentalMaterial3Api::class)` for Material 3 tooltip APIs.
-  - `@OptIn(ExperimentalFoundationApi::class)` for foundation `TooltipArea`.
+  
 
 ## Current documentation notes
 
-- Prefer Material 3 `TooltipBox` for shared Compose UI and Material-styled apps. It works with `PlainTooltip`, `RichTooltip`, `TooltipState`, `rememberTooltipState()`, and `TooltipDefaults` position providers.
+- Prefer Material 3 `TooltipBox` for Material-styled apps. It works with `PlainTooltip`, `RichTooltip`, `TooltipState`, `rememberTooltipState()`, and `TooltipDefaults` position providers.
 - Use `PlainTooltip` for short labels that describe icon-only buttons, toolbar controls, and compact actions.
 - Use `RichTooltip` for extra context, a title, multiline explanation, links, or an action such as Dismiss or Learn more.
 - Use `rememberTooltipState()` unless state must be constructed outside composition. Each `TooltipBox` should have its own `TooltipState`.
 - Use `TooltipState.show()` and `TooltipState.dismiss()` from a coroutine when a tooltip must be shown or hidden programmatically.
 - Use persistent tooltips for actionable rich tooltips. Non-persistent tooltips dismiss after the default short duration; persistent tooltips dismiss on outside click or explicit `dismiss()`.
-- Material 3 `TooltipBox` can respond to pointer hover and long press through `enableUserInput`. On desktop, verify hover behavior with a mouse or trackpad.
-- Material 3 position-provider APIs have evolved. In older/current projects you may see `TooltipDefaults.rememberPlainTooltipPositionProvider()` and `rememberRichTooltipPositionProvider()`. Newer Compose Multiplatform Material 3 also exposes `rememberTooltipPositionProvider(TooltipAnchorPosition, spacingBetweenTooltipAndAnchor)`. Match the project's dependency version.
-- Use JetBrains foundation `TooltipArea` only for desktop-specific UI in `desktopMain` or `jvmMain`, or when a project already uses it consistently. It gives desktop-oriented placement such as cursor-relative or component-relative tooltips and a configurable hover delay.
+- Material 3 `TooltipBox` can respond to pointer hover and long press through `enableUserInput`. On Android Desktop, verify hover behavior with a connected mouse or trackpad.
+- Material 3 position-provider APIs have evolved. In older/current projects you may see `TooltipDefaults.rememberPlainTooltipPositionProvider()` and `rememberRichTooltipPositionProvider()`. Newer Material 3 also exposes `rememberTooltipPositionProvider(TooltipAnchorPosition, spacingBetweenTooltipAndAnchor)`. Match the project's dependency version.
 
 ## Workflow
 
@@ -39,40 +38,30 @@ Expected output:
 Before editing, inspect the relevant UI:
 
 1. Locate the target composables, toolbar rows, icon buttons, menus, data tables, canvas controls, inspector panels, and disabled controls.
-2. Find the active source sets: `commonMain`, `desktopMain`, `jvmMain`, Android-specific source sets, and any shared UI modules.
-3. Search for existing tooltip helpers or wrappers: `TooltipBox`, `PlainTooltip`, `RichTooltip`, `TooltipArea`, `TooltipPlacement`, `rememberTooltipState`, `BasicTooltipBox`, `LocalTooltip`, `WithTooltip`, and design-system components.
+2. Identify the relevant UI modules and screens.
+3. Search for existing tooltip helpers or wrappers: `TooltipBox`, `PlainTooltip`, `RichTooltip`, `rememberTooltipState`, `BasicTooltipBox`, `LocalTooltip`, `WithTooltip`, and design-system components.
 4. Check whether the app uses Material 3 (`androidx.compose.material3`) or Material 2/foundation styling.
 5. Identify anchors that are unclear without text: icon-only buttons, compact toolbar actions, color swatches, timeline controls, disabled actions, status badges, table headers, graph/canvas controls, destructive actions, and hidden shortcut affordances.
 6. Identify where a tooltip is not appropriate: main navigation labels, visible text buttons, form labels, critical validation errors, instructions the user needs before acting, and anything required to complete a task.
 
-Do not add tooltips until you know the source set, anchor component, copy, and expected trigger behavior.
+Do not add tooltips until you know the anchor component, copy, and expected trigger behavior.
 
 ### Step 2: Choose the API
 
 Use this decision rule:
 
-- **Material 3 `TooltipBox`:** Default choice for Material 3 apps, shared `commonMain` UI, Android plus desktop code, and tooltips that should follow Material semantics and styling.
+- **Material 3 `TooltipBox`:** Default choice for Material 3 apps and tooltips that should follow Material semantics and styling.
 - **Material 3 `PlainTooltip`:** Default for icon-only actions and brief command labels.
 - **Material 3 `RichTooltip`:** Use for supplementary details, feature education, irreversible/destructive context, or a short action inside the tooltip.
-- **Foundation `TooltipArea`:** Use only in desktop-specific source sets when the project is not using Material 3 tooltips, when the existing desktop UI already uses `TooltipArea`, or when cursor-relative placement and desktop hover delay are specifically needed.
 - **Custom popup:** Use only when the requested behavior is not a tooltip anymore, such as onboarding coach marks, validation panels, contextual menus, hover previews, or persistent inspectors.
 
-Avoid mixing `TooltipArea` and Material 3 tooltip styling in the same screen unless the codebase already has a wrapper that normalizes appearance.
 
-### Step 3: Place code in the right source set
+### Step 3: Create tooltip wrappers
 
-Source-set placement matters:
+Use a wrapper when a repeated component always needs the same tooltip styling or positioning logic.
+Keep tooltip text in the same localization/string-resource system used by the app. Do not hard-code user-visible copy in a codebase that localizes strings.
 
-- Put Material 3 `TooltipBox` wrappers in `commonMain` when the same composable is used on Android and desktop.
-- Put desktop-only tooltip behavior in `desktopMain` or `jvmMain` if it depends on foundation `TooltipArea`, AWT/Swing, cursor-specific behavior, or desktop-only delay/placement.
-- If shared UI needs different tooltip implementations per target, use one of these patterns:
-  - `expect`/`actual` wrapper such as `PlatformTooltip(...)`.
-  - A common wrapper whose desktop implementation is injected from the desktop module.
-  - A no-op or alternate implementation for unsupported targets if product requirements allow it.
-- Do not import `androidx.compose.foundation.TooltipArea` from `commonMain` unless the project's Compose Multiplatform version and target matrix actually support that usage.
-- Keep tooltip text in the same localization/string-resource system used by the app. Do not hard-code user-visible copy in a codebase that localizes strings.
-
-Example shared wrapper using Material 3:
+Example wrapper using Material 3:
 
 ```kotlin
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -157,7 +146,7 @@ Tooltip copy should be useful, short, and consistent:
 - Use sentence case unless the app's design system says otherwise.
 - Keep plain tooltips brief, usually 1-5 words and rarely more than one short sentence.
 - Do not repeat visible button text unless the tooltip adds shortcut, state, or consequence information.
-- Add shortcut hints only when they are accurate for the platform, such as `Save (Cmd+S)` on macOS and `Save (Ctrl+S)` on Windows/Linux.
+- Add shortcut hints only when they are accurate for the platform, such as `Save (Ctrl+S)`.
 - For disabled controls, explain the requirement: `Select a row first`, `Connect a device to record`, `Finish sync before exporting`.
 - Do not put critical warnings only in a tooltip. Surface critical information inline, in a dialog, or in supporting text.
 - Do not use tooltips as documentation. Rich tooltips can teach one concept, but long help belongs in a help panel or docs.
@@ -340,15 +329,13 @@ Use defaults first:
 - `TooltipDefaults.rememberPlainTooltipPositionProvider()` for plain tooltips when available.
 - `TooltipDefaults.rememberRichTooltipPositionProvider()` for rich tooltips when available.
 - `TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above)` or another anchor position when the project uses newer Material 3 APIs.
-- `TooltipPlacement.CursorPoint(...)` for desktop foundation `TooltipArea` when the tooltip should follow the cursor.
-- `TooltipPlacement.ComponentRect(...)` for desktop foundation `TooltipArea` when the tooltip should align to the component instead of the pointer.
 
 Positioning checks:
 
 - Prefer above the anchor for toolbar controls unless it collides with window edges.
 - For controls near top edges, verify fallback below the anchor.
 - For right-aligned toolbars and side panels, verify the tooltip remains inside the window.
-- For dense tables and canvases, cursor-relative `TooltipArea` can be useful, but it should not cover the value being inspected.
+- For dense tables and canvases, ensure tooltips do not cover the value being inspected.
 - Avoid custom `PopupPositionProvider` unless defaults cannot satisfy a real layout requirement.
 - Test with resized windows, high DPI scaling, long localized strings, RTL layout if the app supports it, and multiple monitors when possible.
 
@@ -375,7 +362,6 @@ When auditing, report findings by anchor and severity:
 - `TooltipState` is shared across unrelated anchors.
 - `show()` is called outside a coroutine or never dismissed.
 - Rich tooltip contains actions but uses non-persistent state.
-- `TooltipArea` leaks into common source sets or non-desktop targets.
 - Tooltip wrappers alter the anchor size, padding, semantics, or click target.
 - Tooltip placement clips at window edges, overlays the anchor, or covers the data being inspected.
 - Tooltip copy is too long, jargon-heavy, inconsistently capitalized, or unlocalized.
@@ -384,13 +370,13 @@ When auditing, report findings by anchor and severity:
 ## Common Problems and Solutions
 
 - **Missing tooltip state:** Use `rememberTooltipState()` for each `TooltipBox`. Do not reuse one state for a whole toolbar.
-- **Wrong API for source set:** Use Material 3 in shared UI; keep foundation `TooltipArea` in desktop-specific source sets unless the project explicitly supports it elsewhere.
+- **Wrong API for source set:** Use Material 3 `TooltipBox`.
 - **Deprecated position provider warnings:** Match the Compose version. If `rememberPlainTooltipPositionProvider()` or `rememberRichTooltipPositionProvider()` is deprecated, migrate to `rememberTooltipPositionProvider(TooltipAnchorPosition...)`.
-- **Tooltip does not appear on desktop:** Verify the anchor is inside `TooltipBox` content, `enableUserInput` is true, the desktop window is focused, and no overlay is consuming pointer events.
+- **Tooltip does not appear on desktop:** Verify the anchor is inside `TooltipBox` content, `enableUserInput` is true, the app window is focused, and no overlay is consuming pointer events.
 - **Tooltip appears but cannot be dismissed:** Use non-persistent state for passive plain tooltips, or call `dismiss()` from rich tooltip actions and mode changes.
 - **Tooltip action is hard to use:** Use `isPersistent = true`, verify keyboard focus, and consider replacing the tooltip with a popover/dialog.
 - **Disabled control has no tooltip:** Wrap the disabled control in an enabled parent tooltip anchor, but keep semantics honest and do not make the disabled action clickable.
-- **Tooltip changes layout:** Ensure the tooltip content is in the popup/tooltip slot, not measured as part of the anchor's normal layout. Be careful with custom wrappers around `TooltipArea`.
+- **Tooltip changes layout:** Ensure the tooltip content is in the popup/tooltip slot, not measured as part of the anchor's normal layout. 
 - **Tooltip covers important UI:** Change anchor position, cursor offset, alignment, or use a richer help surface.
 - **Accessibility regression:** Add or repair accessible names on anchors and do not rely on hover-only disclosure for required information.
 
@@ -409,25 +395,19 @@ Run the app and verify:
 - Icon-only anchors have accessible names.
 - Keyboard-only users can still complete the workflow without relying on tooltip-only information.
 - Touch/long-press behavior still works if the same shared UI is used on Android.
-- Automated tests or previews still compile for every affected source set.
+- Automated tests or previews still compile.
 
 Suggested technical checks:
 
 ```bash
-./gradlew :desktopApp:compileKotlin
-./gradlew :desktopApp:desktopTest
-./gradlew :composeApp:compileKotlinDesktop
-./gradlew :composeApp:compileDebugKotlinAndroid
+./gradlew :app:assembleDebug
+./gradlew :app:test
 ```
 
-Adjust task names to the repository. At minimum, run the compile task for every source set touched.
+Adjust task names to the repository. At minimum, run the compile task.
 
 ## Official References
 
 - Android Developers: Tooltip in Jetpack Compose: https://developer.android.com/develop/ui/compose/components/tooltip
-- Compose Multiplatform desktop tooltips with `TooltipArea`: https://kotlinlang.org/docs/multiplatform/compose-desktop-tooltips.html
-- Compose Multiplatform Material 3 `TooltipDefaults`: https://kotlinlang.org/api/compose-multiplatform/material3/androidx.compose.material3/-tooltip-defaults/
-- Compose Multiplatform Material 3 `TooltipState`: https://kotlinlang.org/api/compose-multiplatform/material3/androidx.compose.material3/-tooltip-state.html
-- Compose Multiplatform Material 3 `RichTooltip`: https://kotlinlang.org/api/compose-multiplatform/material3/androidx.compose.material3/-rich-tooltip.html
 - AndroidX Material 3 tooltip source and KDoc: https://android.googlesource.com/platform/frameworks/support/+/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Tooltip.kt
 - Material Design 3 tooltip guidelines: https://m3.material.io/components/tooltips
