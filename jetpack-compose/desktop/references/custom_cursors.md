@@ -5,7 +5,7 @@ Use this document when adding or modifying mouse cursor behavior in Jetpack Comp
 
 Expected output:
 
-- Analysis of the app structure and interaction surfaces.
+- A short analysis of the app structure, interaction surfaces, and input methods.
 - A recommendation for built-in `PointerIcon` values.
 - Clean implementation preserving click, drag, text selection, and accessibility.
 - Verification notes for hover regions, nested cursors, and enabled/disabled states.
@@ -74,55 +74,7 @@ Implementation notes:
 - Use wrappers for repeated components.
 - Verify modifier ordering. The hover region should match the visual affordance.
 
-### Step 4: Implement conditional cursor state
-
-Use state to change the cursor dynamically. Keep the calculation cheap.
-
-```kotlin
-enum class CanvasTool {
-    Select,
-    Draw,
-    Pan,
-    Disabled,
-}
-
-@Composable
-fun Modifier.canvasToolCursor(
-    tool: CanvasTool,
-    canInteract: Boolean,
-): Modifier {
-    val icon = remember(tool, canInteract) {
-        when {
-            !canInteract -> PointerIcon.Default
-            tool == CanvasTool.Draw -> PointerIcon.Crosshair
-            tool == CanvasTool.Pan -> PointerIcon.Hand
-            else -> PointerIcon.Default
-        }
-    }
-
-    return this.pointerHoverIcon(icon)
-}
-```
-
-When hover state is needed for non-cursor UI:
-
-```kotlin
-@Composable
-fun Modifier.hoverAwareCursor(enabled: Boolean): Modifier {
-    val interactionSource = remember { MutableInteractionSource() }
-    val hovered by interactionSource.collectIsHoveredAsState()
-
-    return this
-        .hoverable(interactionSource)
-        .pointerHoverIcon(
-            if (enabled && hovered) PointerIcon.Hand else PointerIcon.Default,
-        )
-}
-```
-
-Use `pointerInput` only when raw pointer data is needed.
-
-### Step 5: Handle nested cursor precedence
+### Step 4: Handle nested cursor precedence
 
 Choose precedence carefully:
 
@@ -150,7 +102,7 @@ fun DrawingSurface(
 }
 ```
 
-### Step 6: Use Android system cursors
+### Step 5: Use Android system cursors
 
 Wrap `android.view.PointerIcon` in a Compose `PointerIcon` for system cursors not in built-ins.
 
@@ -179,7 +131,7 @@ Common Android system predefined cursors (`android.view.PointerIcon`):
 
 Use `android.view.PointerIcon.getSystemIcon(context, type)` to fetch the correct Android system cursor.
 
-### Step 7: Coordinate with interactions
+### Step 6: Coordinate with interactions
 
 Match real behavior:
 
@@ -193,7 +145,7 @@ Match real behavior:
 - Loading states: Prefer progress indicators. Use `Wait` only for short blocked areas.
 - Popups and menus: Verify cursor resets when entering/leaving popups.
 
-### Step 8: Accessibility and UX checklist
+### Step 7: Accessibility and UX checklist
 
 Ensure usability without a mouse:
 
@@ -203,7 +155,7 @@ Ensure usability without a mouse:
 - Ensure users can identify interactive states visually.
 - Prevent rapid cursor flickering.
 
-### Step 9: Verification checklist
+### Step 8: Verification checklist
 
 Verify on a device or emulator with a mouse:
 
