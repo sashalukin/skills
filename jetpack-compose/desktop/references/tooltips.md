@@ -8,10 +8,6 @@ Expected output:
 - A short analysis of the tooltip anchors, trigger mechanisms, and relevant input modes.
 - Clean implementation that preserves accessibility, focus behavior, and design-system conventions.
 
-## Prerequisites
-
-- `@OptIn(ExperimentalMaterial3Api::class)` is required for Material 3 tooltip APIs.
-
 ## Workflow
 
 ### Step 1: Identify targets and write copy
