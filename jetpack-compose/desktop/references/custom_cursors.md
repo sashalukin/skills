@@ -1,4 +1,4 @@
-# Custom Cursors in Android Compose Desktop
+# Custom Cursors in Android Compose Large Screens
 
 ## Description
 Use this document when adding or modifying mouse cursor behavior in Jetpack Compose for Android large screens and desktop environments.
@@ -6,9 +6,8 @@ Use this document when adding or modifying mouse cursor behavior in Jetpack Comp
 Expected output:
 
 - A short analysis of the app structure, interaction surfaces, and input methods.
-- A recommendation for built-in `PointerIcon` values.
+- A recommendation for standard cursor types.
 - Clean implementation preserving click, drag, text selection, and accessibility.
-- Verification notes for hover regions, nested cursors, and enabled/disabled states.
 
 ## Workflow
 
@@ -17,7 +16,7 @@ Expected output:
 Inspect the relevant UI:
 
 1. Locate the target composables: toolbar buttons, links, text editors, canvas surfaces, draggable items, splitters, resize handles, and disabled controls.
-2. Search for existing cursor helpers or wrappers: `pointerHoverIcon`, `PointerIcon`, `hoverable`, `collectIsHoveredAsState`, `pointerInput`, `clickable`, `combinedClickable`, `draggable`, and `TextField`.
+2. Search for existing cursor helpers or wrappers: `pointerHoverIcon`, `PointerIcon`, `hoverable`, `pointerInput`, `clickable`, `combinedClickable`, `draggable`, and `TextField`.
 3. Identify existing design-system wrappers (buttons, links, drag handles, etc.) and add cursor behavior there instead of scattering raw modifiers.
 4. Identify nested interactive regions which might need different cursor precedence.
 5. Confirm behavior for disabled, read-only, loading, dragging, selection, and modal states.
@@ -56,13 +55,7 @@ fun LinkText(
                 role = Role.Button,
                 onClick = onClick,
             )
-            .then(
-                if (enabled) {
-                    Modifier.pointerHoverIcon(PointerIcon.Hand)
-                } else {
-                    Modifier
-                }
-            ),
+            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
     )
 }
 ```
@@ -107,13 +100,12 @@ fun DrawingSurface(
 Wrap `android.view.PointerIcon` in a Compose `PointerIcon` for system cursors not in built-ins.
 
 ```kotlin
-@Composable
-fun Modifier.horizontalResizeCursor(): Modifier {
+fun Modifier.horizontalResizeCursor(): Modifier = composed {
     val context = LocalContext.current
     val icon = remember(context) {
         PointerIcon(android.view.PointerIcon.getSystemIcon(context, android.view.PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW))
     }
-    return this.pointerHoverIcon(icon)
+    pointerHoverIcon(icon)
 }
 ```
 
@@ -145,39 +137,6 @@ Match real behavior:
 - Loading states: Prefer progress indicators. Use `Wait` only for short blocked areas.
 - Popups and menus: Verify cursor resets when entering/leaving popups.
 
-### Step 7: Accessibility and UX checklist
-
-Ensure usability without a mouse:
-
-- Ensure equivalent visual states (e.g. hover color, focus ring, disabled style).
-- Keep clickable regions keyboard reachable.
-- Don't replace accessibility labels or semantics with cursors.
-- Ensure users can identify interactive states visually.
-- Prevent rapid cursor flickering.
-
-### Step 8: Verification checklist
-
-Verify on a device or emulator with a mouse:
-
-- Hovering each target shows the expected cursor.
-- Leaving returns to the default cursor.
-- State changes (e.g. disabled) update the cursor immediately.
-- Nested children can override the parent when `overrideDescendants = false`.
-- Parent override wins only where intended when `overrideDescendants = true`.
-- Hit regions match the cursor region.
-- Text fields still show an I-beam cursor and allow selection.
-- Dragging does not leave the wrong cursor behind.
-- Popups and dialogs function normally.
-
-Suggested commands, adjusted for the project:
-
-```bash
-./gradlew :app:assembleDebug
-./gradlew :app:test
-```
-
-Update UI tests for cursor wrappers if applicable. Automated tests should cover state mapping.
-
 ## Common pitfalls
 
 - Using `pointerHoverIcon` as a substitute for `clickable`, `hoverable`, semantics, focus, or visual states.
@@ -186,9 +145,10 @@ Update UI tests for cursor wrappers if applicable. Automated tests should cover 
 - Calling `android.view.PointerIcon.getSystemIcon` directly inside recomposition callbacks without `remember`.
 - Letting cursor state diverge from actual interaction state during drag, modal, loading, or disabled transitions.
 
-## Official reference links
+## Reference links
+
+Consult these references before proceeding with the implementation.
 
 - Compose `pointerHoverIcon` API reference: <https://developer.android.com/reference/kotlin/androidx/compose/ui/input/pointer/package-summary#pointerHoverIcon(androidx.compose.ui.Modifier,androidx.compose.ui.input.pointer.PointerIcon,kotlin.Boolean)>
 - Compose `PointerIcon` API reference: <https://developer.android.com/reference/kotlin/androidx/compose/ui/input/pointer/PointerIcon>
 - Android pointer input overview: <https://developer.android.com/develop/ui/compose/touch-input/pointer-input>
-- Android `PointerIcon` API reference: <https://developer.android.com/reference/android/view/PointerIcon>
