@@ -1,4 +1,4 @@
-# Tooltips in Android Compose Large Screens
+# Tooltips in Jetpack Compose for desktops
 
 ## Description
 Use this document when you need to add or redesign tooltips in a Jetpack Compose application targeting Android large screens and desktop environments.
