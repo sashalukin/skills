@@ -1,9 +1,7 @@
----
-name: add-compose-tooltips
-description: Add or redesign Material 3 tooltips in Android Jetpack Compose apps for large screens and desktop windowing. Use for tooltip text, triggers, positioning, accessibility, rich actions, and programmatic display. Do not use Compose Multiplatform Desktop TooltipArea.
----
-
 # Add tooltips in Jetpack Compose
+
+## Description
+Use this document when you need to add or redesign tooltips in a Jetpack Compose application targeting Android large screens and desktop environments. Do not use Compose Multiplatform Desktop TooltipArea.
 
 Expected output:
 
