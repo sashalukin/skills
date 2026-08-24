@@ -1,4 +1,4 @@
-# Tooltips in Jetpack Compose for desktops
+# Add tooltips in Jetpack Compose for desktops
 
 ## Description
 Use this document when you need to add or redesign tooltips in a Jetpack Compose application targeting Android large screens and desktop environments.
@@ -10,7 +10,7 @@ Expected output:
 
 ## Workflow
 
-### Step 1: Identify targets and write copy
+### Step 1: Identify tooltip targets and text
 
 Inspect the relevant UI:
 
@@ -23,13 +23,17 @@ For each tooltip, write brief, sentence-case copy:
 - Do not repeat visible button text unless the tooltip adds a shortcut or consequence.
 - Add shortcut hints only when accurate, e.g., `Save (Ctrl+S)`.
 - For disabled controls, explain the requirement: `Select a row first`.
+- Check whether long-press already starts dragging, selection, or a context menu. Do not add tooltip behavior that competes with an existing gesture.
 
 ### Step 2: Implement the tooltips
 
-Iterate through the identified targets and choose the most appropriate implementation pattern for each:
+Iterate through the identified targets and implement tooltips for each according to the following patterns.
 
-#### Pattern A: Reusable Wrapper (Recommended)
-Use a wrapper when a repeated component always needs the same tooltip styling or positioning logic.
+- **Code:** Use an existing design-system component when possible. Use a shared wrapper for repeated tooltips and inline `TooltipBox` for one-off tooltips.
+- **Type:** Use `PlainTooltip` for a short label. Use `RichTooltip` for extra details or one action.
+- **Trigger:** Use the default hover, long-press, and keyboard-focus behavior unless the tooltip should only be shown from code.
+
+Use the current tooltip API:
 
 ```kotlin
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,7 +44,9 @@ fun ActionTooltip(
     content: @Composable () -> Unit,
 ) {
     TooltipBox(
-        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+            positioning = TooltipAnchorPosition.Above,
+        ),
         tooltip = { PlainTooltip { Text(text) } },
         state = rememberTooltipState(),
         modifier = modifier,
@@ -50,76 +56,23 @@ fun ActionTooltip(
 }
 ```
 
-#### Pattern B: Inline Plain Tooltip
-Use `TooltipBox` directly around the anchor for one-off tooltips. The anchor must remain the actual interactive control.
+Follow these rules:
 
-```kotlin
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ExportButton(onExport: () -> Unit) {
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-        tooltip = { PlainTooltip { Text("Export CSV") } },
-        state = rememberTooltipState(),
-    ) {
-        IconButton(onClick = onExport) {
-            Icon(
-                imageVector = Icons.Filled.Download,
-                contentDescription = "Export CSV",
-            )
-        }
-    }
-}
-```
-- Give each inline `TooltipBox` its own `rememberTooltipState()`. Do not share state across multiple controls.
-- Prefer `TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above)` if available in the project's Compose version.
+- Give each `TooltipBox` its own `TooltipState`.
+- Keep the real button or control inside `TooltipBox`. Do not move its click, focus, enabled state, or accessibility behavior to the wrapper.
+- Keep the wrapper the same size as the control.
+- For a rich tooltip with an action, use `rememberTooltipState(isPersistent = true)`, set `hasAction = true`, and dismiss it after the action.
+- For a tooltip shown only from code, set `enableUserInput = false`. Call `show()` from a coroutine and call `dismiss()` directly.
 
-#### Pattern C: Rich Tooltip
-Use a rich tooltip when it needs title/body structure or an action.
+#### Show tooltips from code (optional)
 
-```kotlin
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SharedFiltersInfoButton() {
-    val tooltipState = rememberTooltipState(isPersistent = true)
-    val scope = rememberCoroutineScope()
+Use this only for brief, nonessential help, such as feature education.
 
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberRichTooltipPositionProvider(),
-        tooltip = {
-            RichTooltip(
-                title = { Text("Shared filters") },
-                action = {
-                    TextButton(
-                        onClick = { scope.launch { tooltipState.dismiss() } },
-                    ) {
-                        Text("Dismiss")
-                    }
-                },
-            ) {
-                Text("Changes apply to everyone using this dashboard.")
-            }
-        },
-        state = tooltipState,
-    ) {
-        IconButton(onClick = { scope.launch { tooltipState.show() } }) {
-            Icon(
-                imageVector = Icons.Filled.Info,
-                contentDescription = "Shared filters information",
-            )
-        }
-    }
-}
-```
-- Use `isPersistent = true` when `RichTooltip` contains actions or links.
-- Keep actions inside rich tooltips minimal. 
-
-### Step 3: Programmatic control (Optional)
-
-When tooltips are used for onboarding or validation hints, control them programmatically:
-- Call `tooltipState.show()` from a coroutine; it is a suspend function.
-- Call `tooltipState.dismiss()` when the related UI disappears or an action completes.
-- Do not show multiple tooltips at once.
+- Call `tooltipState.show()` from a coroutine.
+- Call `tooltipState.dismiss()` directly when the tooltip is no longer needed.
+- Set `enableUserInput = false` if hover, long press, and keyboard focus should not show it.
+- Trigger `show()` from a user event or a one-time effect, not directly during composition.
+- Show only one tooltip at a time.
 
 ## Common pitfalls
 

@@ -1,4 +1,4 @@
-# Custom Cursors in Jetpack Compose for desktops
+# Add custom Cursors in Jetpack Compose for desktops
 
 ## Description
 Use this document when adding or modifying mouse cursor behavior in Jetpack Compose for Android desktop environment.

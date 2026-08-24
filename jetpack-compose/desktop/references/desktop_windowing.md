@@ -1,4 +1,4 @@
-# Desktop Windowing in Jetpack Compose for desktops
+# Add desktop Windowing in Jetpack Compose for desktops
 
 ## Description
 Use this document when you need to handle desktop windowing features, such as freeform window resizing, window state management, and multi-window support in an Android application.

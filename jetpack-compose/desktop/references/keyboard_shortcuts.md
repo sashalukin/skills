@@ -1,4 +1,4 @@
-# Keyboard Shortcuts in Jetpack Compose for desktops
+# Add keyboard Shortcuts in Jetpack Compose for desktops
 
 ## Description
 Use this document when you need to add, redesign, or expose keyboard shortcuts in a Jetpack Compose application targeting Android large screens and desktop environments.
