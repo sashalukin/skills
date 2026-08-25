@@ -1,6 +1,6 @@
 ---
 name: jetpack-compose-desktop
-description: Use this skill when you need to add desktop-specific features to an Android Jetpack Compose application, such as keyboard shortcuts, tooltips, custom cursors, and desktop windowing. It provides workflows for desktop UI/UX requirements.
+description: Use this skill when you need to add desktop-specific features to an Android Jetpack Compose application, such as keyboard shortcuts, tooltips, and custom cursors. It provides workflows for desktop UI/UX requirements.
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
@@ -11,7 +11,6 @@ metadata:
   - desktop
   - keyboard
   - tooltips
-  - windowing
   - cursors
 ---
 
@@ -29,6 +28,5 @@ Based on the feature identified, read the corresponding reference file and follo
 * **Keyboard Shortcuts** -> read `references/keyboard_shortcuts.md`
 * **Tooltips** -> read `references/tooltips.md`
 * **Custom Cursors** -> read `references/custom_cursors.md`
-* **Desktop Windowing** -> read `references/desktop_windowing.md`
 
 *(Future capabilities like drag and drop, or handoff will be added here as new branches.)*
