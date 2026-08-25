@@ -4,7 +4,7 @@ description: Use this skill when you need to add desktop-specific features to an
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-19'
+  last-updated: '2026-08-24'
   keywords:
   - android
   - compose
@@ -29,4 +29,4 @@ Based on the feature identified, read the corresponding reference file and follo
 * **Tooltips** -> read `references/tooltips.md`
 * **Custom Cursors** -> read `references/custom_cursors.md`
 
-*(Future capabilities like drag and drop, or handoff will be added here as new branches.)*
+*(Future capabilities like desktop windowing, drag and drop, or handoff will be added here as new branches.)*
