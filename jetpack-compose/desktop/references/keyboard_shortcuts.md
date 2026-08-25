@@ -58,7 +58,7 @@ Define custom app-level shortcuts in one registry so dispatch and Keyboard Short
 - Keep matching logic pure and reusable.
 - Consume a shortcut only when its action is available and executes.
 
-Example registry and dispatcher:
+Example:
 
 ```kotlin
 enum class AppCommand {
@@ -66,76 +66,48 @@ enum class AppCommand {
     Find,
 }
 
-@Immutable
 data class AppShortcut(
     val command: AppCommand,
-    val label: String,
+    @StringRes val labelResId: Int,
     val key: Key,
-    val usesPrimaryModifier: Boolean = false,
-    val shift: Boolean = false,
+    val modifiers: Int = 0,
 )
-
-fun KeyEvent.matches(shortcut: AppShortcut): Boolean {
-    if (type != KeyEventType.KeyDown || key != shortcut.key) return false
-    if (isAltPressed) return false
-    if (isShiftPressed != shortcut.shift) return false
-
-    return if (shortcut.usesPrimaryModifier) {
-        isCtrlPressed && !isMetaPressed
-    } else {
-        !isCtrlPressed && !isMetaPressed
-    }
-}
 
 val appShortcuts = listOf(
-    AppShortcut(AppCommand.Save, "Save", Key.S, usesPrimaryModifier = true),
-    AppShortcut(AppCommand.Find, "Find", Key.F, usesPrimaryModifier = true),
+    AppShortcut(
+        AppCommand.Save,
+        R.string.shortcut_save,
+        Key.S,
+        android.view.KeyEvent.META_CTRL_ON,
+    ),
+    AppShortcut(
+        AppCommand.Find,
+        R.string.shortcut_find,
+        Key.F,
+        android.view.KeyEvent.META_CTRL_ON,
+    ),
 )
-```
 
-Dispatch from the screen root:
+fun KeyEvent.matches(shortcut: AppShortcut): Boolean =
+    type == KeyEventType.KeyDown &&
+        nativeKeyEvent.repeatCount == 0 &&
+        key == shortcut.key &&
+        nativeKeyEvent.hasModifiers(shortcut.modifiers)
 
-```kotlin
-class AppActions(
-    val save: () -> Unit,
-    val find: () -> Unit,
-)
+fun dispatchAppShortcut(
+    event: KeyEvent,
+    execute: (AppCommand) -> Boolean,
+): Boolean {
+    val command = appShortcuts
+        .firstOrNull { event.matches(it) }
+        ?.command
+        ?: return false
 
-fun dispatchAppShortcut(event: KeyEvent, actions: AppActions): Boolean {
-    val command = appShortcuts.firstOrNull { event.matches(it) }?.command ?: return false
-
-    when (command) {
-        AppCommand.Save -> actions.save()
-        AppCommand.Find -> actions.find()
-    }
-    return true
-}
-
-@Composable
-fun MainScreen(
-    actions: AppActions,
-    modifier: Modifier = Modifier
-) {
-    val focusRequester = remember { FocusRequester() }
-    
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .focusRequester(focusRequester)
-            .focusable()
-            // Use onKeyEvent to let children handle events first, or onPreviewKeyEvent to intercept
-            .onKeyEvent { event ->
-                dispatchAppShortcut(event, actions)
-            }
-    ) {
-        /* App content */
-    }
-    
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
+    return execute(command)
 }
 ```
+
+Adapt this pattern to the app's existing architecture instead of introducing duplicate action abstractions.
 
 ### Step 5: Publish to Keyboard Shortcut Helper
 
