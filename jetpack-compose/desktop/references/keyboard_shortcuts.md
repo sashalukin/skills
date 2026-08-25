@@ -1,4 +1,4 @@
-# Add keyboard Shortcuts in Jetpack Compose for desktops
+# Add keyboard shortcuts in Jetpack Compose
 
 ## Description
 Use this document when you need to add, redesign, or expose keyboard shortcuts in a Jetpack Compose application targeting Android large screens and desktop environments.
@@ -12,27 +12,22 @@ Expected output:
 
 ## Workflow
 
-### Step 1: Discover structure and actions
+### Step 1: Discover app structure and actions
 
 Inspect the application:
 
-1. Locate the screen root or relevant parent containers.
-2. Locate the navigation model.
-3. List primary workflows to identify high-value shortcut candidates (e.g., save, search, create, delete, play/pause, submit).
-4. Search for existing menus, actions, or string resources to reuse.
-5. Check for editable regions (`TextField`, embedded components).
+1. Find the screens and containers where shortcuts may be needed, then list the actions users perform often, such as save, search, create, delete, play/pause, or submit.
+2. Find existing action handlers, menus, shortcuts, and localized strings to reuse.
+3. Find `TextField` and other components that already handle keyboard input.
 
 Identify the action and its owner before implementing shortcuts.
 
-### Step 2: Recommend the shortcut scheme
+### Step 2: Choose the shortcuts
 
-- Prefer standard OS conventions (Save, Find, Undo, etc.).
-- Use Ctrl as the primary modifier on Android.
+- Prefer common OS conventions and use Ctrl as the primary modifier on Android.
 - Add domain shortcuts only for frequent, central actions.
-- Avoid obscure shortcuts or overloaded chords.
 - Do not override standard text editing shortcuts.
-- Avoid OS-reserved shortcuts (e.g., Alt+Tab).
-- Handle Escape deliberately (close dialogs before navigating back).
+- Use Escape to cancel or dismiss the current temporary UI. Do not use it as general Back navigation.
 
 Common starting points:
 
@@ -42,39 +37,26 @@ Common starting points:
 | Find/Search | Ctrl+F | Focus search field. |
 | New item | Ctrl+N | Primary creation action. |
 | Open | Ctrl+O | Use for open/import flows. |
-| Close active document/dialog | Ctrl+W or Escape | Match close/back behavior. |
 | Refresh | Ctrl+R or F5 | Avoid browser reload if web content is focused. |
 | Delete selected item | Delete or Backspace | Never trigger during text edit. |
 | Play/pause | Space | Only when expected by focus. |
-
-#### Reference category patterns
-
-First, identify the category of your application. Then, research official documentation or help pages for 2-4 comparable industry-leading apps in that same category to see what shortcuts they implement. Cite those sources in the implementation summary.
-
-| Category | Useful shortcut patterns to research | Adaptation guidance |
-| --- | --- | --- |
-| Productivity & Office | Quick switcher or search (`Ctrl+K` or `Ctrl+P`), in-page find (`Ctrl+F`), new item (`Ctrl+N`), standard rich-text formatting (`Ctrl+B/I/U`), Escape for selection or back behavior. | Keep editing shortcuts native inside text fields and editors. Prefer a command palette for broad workspace actions and reserve unmodified keys for focused editor modes only. |
-| Creativity & Design | Actions menu (`Ctrl+K`), tool or mode keys, comments, zoom-to-fit or zoom-to-selection, playback (`Space`), record (`R`), panel switching, ratings or flags. | Scope tool keys to canvas, timeline, mixer, or design surfaces. Avoid overriding text entry, OS zoom, or browser shortcuts. |
-| Entertainment & Media | Play/pause (`Space`), seek with arrow keys, volume with up/down arrows, mute (`M`), fullscreen (`F`), search (`Ctrl+K` or `Ctrl+F`), shuffle/repeat/queue actions. | Use plain media keys only when media focus is clear. Avoid triggering playback while forms, comments, or search fields are focused. |
-| Education & Learning | Escape to close overlays, media controls (`Space`, arrows, `F`, `M`), answer submission or next-step navigation when focus is explicit. | Prioritize accessibility and predictable focus traversal. Avoid shortcuts that can interfere with quizzes, assignments, or text answers. |
-| Communication & Social | Quick switcher (`Ctrl+K`), channel/chat search (`Ctrl+F`), global search (`Ctrl+Shift+F`), emoji picker, mute/deafen, unread/read actions, Alt arrow navigation, Escape to cancel or mark read. | Do not intercept composition, markdown, or text-editing shortcuts while the message box is active. Keep navigation and moderation shortcuts scoped to list or conversation focus. |
 
 ### Step 3: Decide shortcut scope
 
 Attach your shortcut dispatcher to the correct level of the UI hierarchy:
 
-- **Global commands:** Attach the dispatcher to a focusable screen root so shortcuts work anywhere in the app.
-- **Dialog commands:** Attach a dialog-specific dispatcher to the dialog content so background shortcuts don't leak, and dialog shortcuts (like Escape) don't trigger when the dialog is closed.
-
-Prefer root-level handlers for all commands registered in your central registry.
+- **Screen-wide commands:** Attach the handler to a common ancestor of the focused screen content.
+- **Modal commands:** Attach the handler inside the active dialog, menu, or sheet.
+- **Contextual commands:** Attach the handler to the focused editor, canvas, list, or media surface.
 
 ### Step 4: Implement a central shortcut registry
 
-All standard application shortcuts must be defined in a central registry so they can be dispatched consistently and published to the system.
+Define custom app-level shortcuts in one registry so dispatch and Keyboard Shortcut Helper use the same source of truth.
 
-- Define stable command IDs or enum values.
-- Define one shortcut list for dispatch and the system helper.
-- Keep matcher functions pure for unit testing.
+- Use stable command IDs.
+- Store localized labels, keys, and Android modifier masks.
+- Keep matching logic pure and reusable.
+- Consume a shortcut only when its action is available and executes.
 
 Example registry and dispatcher:
 
@@ -159,17 +141,21 @@ fun MainScreen(
 
 Every implemented shortcut must be visible to users via the system Keyboard Shortcut Helper.
 
-- Override `onProvideKeyboardShortcuts` in the hosting `Activity`.
-- Map your internal `AppShortcut` list to Android's `KeyboardShortcutGroup` and `KeyboardShortcutInfo` (Hint: use `shortcut.key.nativeKeyCode` to get the integer keycode).
+- Override `onProvideKeyboardShortcuts` in the hosting `Activity`. Keyboard Shortcut Helper is available on API level 24 and higher.
+- Map the registry to `KeyboardShortcutGroup` and `KeyboardShortcutInfo`.
+- Resolve shortcut and group labels from string resources.
+- Use `shortcut.key.nativeKeyCode` for the key code and `shortcut.modifiers` for the modifier mask. Import `androidx.compose.ui.input.key.nativeKeyCode`.
+- Group shortcuts by screen or use case when helpful.
 
 ## Common pitfalls
 
-- Too many shortcuts for rare actions.
-- Wrong scope (e.g. app-wide commands on local components).
-- Missing `focusable()` and `FocusRequester` on the capturing container.
-- Intercepting standard text editing shortcuts (e.g. improperly using `onPreviewKeyEvent` instead of `onKeyEvent`).
-- Propagation bugs (returning true when event should continue).
-- Undiscoverable shortcuts.
+- Adding shortcuts for rare actions.
+- Attaching handlers at the wrong scope or outside the active focus path.
+- Stealing focus with an invisible root container.
+- Intercepting focused-child behavior unintentionally with `onPreviewKeyEvent`.
+- Repeating one-time commands on repeated `KeyDown` events.
+- Consuming disabled or unhandled commands.
+- Publishing Keyboard Shortcut Helper entries that do not match actual dispatch.
 
 ## Reference links
 

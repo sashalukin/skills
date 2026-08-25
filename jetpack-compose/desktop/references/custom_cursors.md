@@ -6,7 +6,7 @@ Use this document when adding or modifying pointer cursor behavior in a Jetpack 
 Expected output:
 
 - A short analysis of the app structure, interaction surfaces, and input methods.
-- A recommendation for standard cursor types.
+- A recommended system cursor for each target.
 - Clean implementation preserving click, drag, text selection, and accessibility.
 
 ## Workflow
@@ -15,10 +15,10 @@ Expected output:
 
 Inspect the relevant UI:
 
-1. Find links, clickable text, icon-only controls, custom editors, canvas tools, draggable items, splitters, and resize handles.
-2. Search for `pointerHoverIcon`, `PointerIcon`, `clickable`, `combinedClickable`, `hoverable`, `draggable`, `pointerInput`, and text fields.
-3. Find shared design-system components. Change them when the same cursor rule applies to every instance.
-4. Note nested regions and states that may change the cursor: disabled, read-only, loading, dragging, selection, and modal modes.
+1. Find links, clickable text, icon-only controls, selectable text, custom editors, canvas tools, draggable items, splitters, and resize handles.
+2. Search for `pointerHoverIcon`, `PointerIcon`, `clickable`, `combinedClickable`, `hoverable`, `draggable`, `pointerInput`, and `SelectionContainer`.
+3. Find shared design-system components that own repeated interaction patterns.
+4. Note nested regions and states that may change the cursor: disabled, read-only, loading, dragging, selection modes, and modal modes.
 
 ### Step 2: Process each target
 
@@ -29,15 +29,15 @@ For each target:
    - **Default:** Normal content, standard buttons, disabled controls, and non-interactive regions.
    - **Hand:** Links, clickable text, and icon-only clickable controls. Do not use it for every clickable surface.
    - **Text:** Custom editable or selectable text regions. Do not override the correct cursor of standard text fields.
-   - **Crosshair:** Drawing, precision targeting, and spatial selection.
+   - **Crosshair:** Precision drawing, targeting, and spatial selection.
    - **Resize:** Splitters, resizable edges, and resize handles. Match the cursor direction to the handle.
-   - **Grab or grabbing:** Draggable items when moving is the primary action.
+   - **Grab or grabbing:** Use `Grab` for movable surfaces and `Grabbing` only during an active drag.
    - **Wait:** A short, temporarily blocked region. Also show visible progress.
 3. Keep the real interaction in the appropriate component or modifier, such as `clickable`, `combinedClickable`, or `draggable`. A cursor modifier only changes the pointer icon.
 4. Apply `pointerHoverIcon` to the same bounds as the interaction.
 5. Use `PointerIcon.Default`, `Hand`, `Text`, or `Crosshair` when possible.
-6. Use `android.view.PointerIcon` for resize, grab, grabbing, wait, and other system cursors. Create the icon once with `remember`.
-7. Keep `overrideDescendants = false` so nested controls can use their own cursors. Set it to `true` only when the parent owns the entire mode or region.
+6. Use `PointerIcon(android.view.PointerIcon.TYPE_...)` for resize, grab, grabbing, wait, and other Android system cursors.
+7. Leave `overrideDescendants` at its default `false` so nested controls can set their own cursors. Use `true` only when the parent owns the entire mode or region.
 8. Keep the cursor aligned with enabled, read-only, loading, dragging, selection, and modal state.
 9. Put repeated cursor behavior in a shared component or modifier.
 
@@ -45,7 +45,7 @@ Built-in cursor example:
 
 ```kotlin
 @Composable
-fun LinkText(
+fun TextAction(
     text: String,
     enabled: Boolean,
     onClick: () -> Unit,
@@ -67,11 +67,11 @@ fun LinkText(
 
 ## Common pitfalls
 
-- Using `pointerHoverIcon` as a substitute for `clickable`, `hoverable`, semantics, focus, or visual states.
 - Showing `Hand` over disabled controls.
 - Setting `overrideDescendants = true` on a broad parent and accidentally suppressing `Text` cursors in text fields.
-- Calling `android.view.PointerIcon.getSystemIcon` directly inside recomposition callbacks without `remember`.
 - Letting cursor state diverge from actual interaction state during drag, modal, loading, or disabled transitions.
+- Applying the cursor to an area that does not match the interaction bounds.
+
 
 ## Reference links
 
