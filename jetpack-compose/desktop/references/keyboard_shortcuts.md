@@ -110,11 +110,7 @@ Adapt this pattern to the app's existing architecture instead of introducing dup
 
 Every implemented shortcut must be visible to users via the system Keyboard Shortcut Helper.
 
-- Override `onProvideKeyboardShortcuts` in the hosting `Activity`. Keyboard Shortcut Helper is available on API level 24 and higher.
-- Map the registry to `KeyboardShortcutGroup` and `KeyboardShortcutInfo`.
-- Resolve shortcut and group labels from string resources.
-- Use `shortcut.key.nativeKeyCode` for the key code and `shortcut.modifiers` for the modifier mask. Import `androidx.compose.ui.input.key.nativeKeyCode`.
-- Group shortcuts by screen or use case when helpful.
+Follow the Keyboard Shortcut Helper guide: https://developer.android.com/develop/ui/compose/touch-input/keyboard-input/keyboard-shortcuts-helper
 
 ## Common pitfalls
 
@@ -131,5 +127,4 @@ Every implemented shortcut must be visible to users via the system Keyboard Shor
 Consult these references before proceeding with the implementation.
 
 - Compose keyboard input guide: https://developer.android.com/develop/ui/compose/touch-input/keyboard-input/commands
-- Keyboard Shortcuts Helper guide: https://developer.android.com/develop/ui/compose/touch-input/keyboard-input/keyboard-shortcuts-helper
 - Android desktop keyboard interaction guidance: https://developer.android.com/design/ui/desktop/guides/interaction/keyboard
