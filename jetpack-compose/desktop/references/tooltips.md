@@ -1,6 +1,7 @@
 # Add tooltips in Jetpack Compose
 
 ## Description
+
 Use this document when you need to add or redesign tooltips in a Jetpack Compose application targeting Android large screens and desktop environments. Do not use Compose Multiplatform Desktop TooltipArea.
 
 Expected output:
@@ -18,6 +19,7 @@ Inspect the relevant UI:
 3. Check whether long press already starts dragging, selection, or a context menu. Skip the tooltip if it conflicts.
 
 For each tooltip, use a localized string and brief, sentence-case text:
+
 - Prefer verbs for actions: `Add column`, `Export CSV`, `Mute track`.
 - Keep plain tooltips short and clear.
 - Do not repeat visible button text unless the tooltip adds a shortcut or consequence.

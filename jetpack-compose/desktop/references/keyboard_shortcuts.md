@@ -1,6 +1,7 @@
 # Add keyboard shortcuts in Jetpack Compose
 
 ## Description
+
 Use this document when you need to add, redesign, or expose keyboard shortcuts in a Jetpack Compose application targeting Android large screens and desktop environments.
 
 Expected output:
@@ -8,7 +9,7 @@ Expected output:
 - A short analysis of the app structure, navigation model, primary screens, and major user actions.
 - A recommended shortcut scheme limited to common desktop conventions and high-value domain actions.
 - A clean implementation with predictable scope.
-- User-visible shortcut discovery via Keyboard Shortcut Helper.
+- User-visible shortcut discovery using Keyboard Shortcut Helper.
 
 ## Workflow
 
@@ -37,7 +38,9 @@ Common starting points:
 | Find/Search | Ctrl+F | Focus search field. |
 | New item | Ctrl+N | Primary creation action. |
 | Open | Ctrl+O | Use for open/import flows. |
+| Navigation destinations | Ctrl+1 to Ctrl+9 | Switch between primary navigation items (e.g., Tabs, Navigation Rail, or Drawer items) in order. |
 | Refresh | Ctrl+R or F5 | Avoid browser reload if web content is focused. |
+| Send a message or submit a form | Enter | Use Shift+Enter for a new line in multi-line text fields. |
 | Delete selected item | Delete or Backspace | Never trigger during text edit. |
 | Play/pause | Space | Only when expected by focus. |
 
@@ -45,6 +48,7 @@ Common starting points:
 
 Attach your shortcut dispatcher to the correct level of the UI hierarchy:
 
+- **App-wide commands:** Attach the handler to the root navigation container or main scaffold (e.g., for switching root navigation destinations).
 - **Screen-wide commands:** Attach the handler to a common ancestor of the focused screen content.
 - **Modal commands:** Attach the handler inside the active dialog, menu, or sheet.
 - **Contextual commands:** Attach the handler to the focused editor, canvas, list, or media surface.

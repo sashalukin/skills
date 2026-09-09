@@ -1,6 +1,7 @@
 # Add pointer cursors in Jetpack Compose
 
 ## Description
+
 Use this document when adding or modifying pointer cursor behavior in a Jetpack Compose application targeting Android large screens and desktop environments.
 
 Expected output:
@@ -15,10 +16,10 @@ Expected output:
 
 Inspect the relevant UI:
 
-1. Find links, clickable text, icon-only controls, selectable text, custom editors, canvas tools, draggable items, splitters, and resize handles.
+1. Find all the links, clickable text, icon-only controls, selectable text, custom editors, canvas tools, draggable items, splitters, and resize handles.
 2. Search for `pointerHoverIcon`, `PointerIcon`, `clickable`, `combinedClickable`, `hoverable`, `draggable`, `pointerInput`, and `SelectionContainer`.
-3. Find shared design-system components that own repeated interaction patterns.
-4. Note nested regions and states that may change the cursor: disabled, read-only, loading, dragging, selection modes, and modal modes.
+3. Find shared components for repeated targets. Update a shared component only when all its instances need the same cursor; otherwise update each target separately.
+4. Note nested regions and states that will change the cursor: disabled, read-only, loading, dragging, selection modes, and modal modes.
 
 ### Step 2: Process each target
 
@@ -33,7 +34,7 @@ For each target:
    - **Resize:** Splitters, resizable edges, and resize handles. Match the cursor direction to the handle.
    - **Grab or grabbing:** Use `Grab` for movable surfaces and `Grabbing` only during an active drag.
    - **Wait:** A short, temporarily blocked region. Also show visible progress.
-3. Keep the real interaction in the appropriate component or modifier, such as `clickable`, `combinedClickable`, or `draggable`. A cursor modifier only changes the pointer icon.
+3. Keep the real interaction in the right component or modifier, such as `clickable`, `combinedClickable`, or `draggable`. A cursor modifier only changes the pointer icon.
 4. Apply `pointerHoverIcon` to the same bounds as the interaction.
 5. Use `PointerIcon.Default`, `Hand`, `Text`, or `Crosshair` when possible.
 6. Use `PointerIcon(android.view.PointerIcon.TYPE_...)` for resize, grab, grabbing, wait, and other Android system cursors.
@@ -67,11 +68,12 @@ fun TextAction(
 
 ## Common pitfalls
 
+You MUST not fall into these common pitfalls:
+
 - Showing `Hand` over disabled controls.
 - Setting `overrideDescendants = true` on a broad parent and accidentally suppressing `Text` cursors in text fields.
 - Letting cursor state diverge from actual interaction state during drag, modal, loading, or disabled transitions.
 - Applying the cursor to an area that does not match the interaction bounds.
-
 
 ## Reference links
 
