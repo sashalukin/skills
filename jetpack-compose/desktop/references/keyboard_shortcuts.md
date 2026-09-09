@@ -2,14 +2,7 @@
 
 ## Description
 
-Use this document when you need to add, redesign, or expose keyboard shortcuts in a Jetpack Compose application targeting Android large screens and desktop environments.
-
-Expected output:
-
-- A short analysis of the app structure, navigation model, primary screens, and major user actions.
-- A recommended shortcut scheme limited to common desktop conventions and high-value domain actions.
-- A clean implementation with predictable scope.
-- User-visible shortcut discovery using Keyboard Shortcut Helper.
+Use this document when you need to add, redesign, or expose keyboard shortcuts in a Jetpack Compose application.
 
 ## Workflow
 
@@ -30,7 +23,7 @@ Identify the action and its owner before implementing shortcuts.
 - Do not override standard text editing shortcuts.
 - Use Escape to cancel or dismiss the current temporary UI. Do not use it as general Back navigation.
 
-Common starting points:
+You must implement these keyboard shortcuts when they are relevant to the app:
 
 | Action | Shortcut | Notes |
 | --- | --- | --- |
